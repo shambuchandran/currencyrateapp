@@ -68,6 +68,8 @@ kotlin {
             implementation(libs.kotlin.coroutines)
             implementation(libs.stately.common)
 
+            implementation("media.kamel:kamel-image:0.7.0")
+
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
