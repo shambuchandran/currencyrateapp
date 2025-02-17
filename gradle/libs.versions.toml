@@ -1,7 +1,7 @@
 [versions]
 agp = "8.7.3"
-android-compileSdk = "34"
-android-minSdk = "24"
+android-compileSdk = "35"
+android-minSdk = "28"
 android-targetSdk = "34"
 androidx-activityCompose = "1.9.3"
 androidx-appcompat = "1.7.0"
@@ -23,6 +23,7 @@ koinCore = "3.5.3"
 realm = "2.0.0"
 coroutines = "1.8.0"
 statelyCommon = "2.0.5"
+media3CommonKtx = "1.5.1"
 
 
 [libraries]
@@ -62,6 +63,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 mongodb-realm = { module= "io.realm.kotlin:library-base" ,version.ref= "realm" }
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core" , version.ref = "coroutines"}
 stately-common = { module = "co.touchlab:stately-common" , version.ref = "statelyCommon"}
+androidx-media3-common-ktx = { group = "androidx.media3", name = "media3-common-ktx", version.ref = "media3CommonKtx" }
 
 
 [plugins]

@@ -19,7 +19,6 @@ fun App() {
 //    }
 
     initializeKoin()
-
     MaterialTheme {
         Navigator(HomeScreen())
     }

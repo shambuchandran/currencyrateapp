@@ -110,16 +110,22 @@ class CurrencyApiServiceImpl(
 //                }
 //                val availableCurrencies = apiResponse.data.values
 //                    .filter { currency -> availableCurrencyCodes.contains(currency.code) }
-                val availableCurrencies = apiResponse.data.values.mapNotNull { currency ->
+                val availableCurrencies = apiResponse.data.values.map { currency ->
                     val countryCode = currencyToCountryCodeMap[currency.code]
 //                    countryCode?.let {
 //                        val flagUrl = FLAG_URL_TEMPLATE.replace("{countryCode}", it)
 //                        currency.copy(country = getCountryName(it), flagUrl = flagUrl)
 //                    }
                     val countryName = countryCode?.let { getCountryName(it) } ?: "Unknown"
-                    val flagUrl = countryCode?.let { FLAG_URL_TEMPLATE.replace("{countryCode}", it) }
+                    val flagUrlApi = countryCode?.let { FLAG_URL_TEMPLATE.replace("{countryCode}", it) }
                         ?: "" //UNKNOWN FLAG
-                    currency.copy(country = countryName, flagUrl = flagUrl)
+                    Currency().apply {
+                        _id = currency._id
+                        code = currency.code
+                        value = currency.value
+                        country = countryName
+                        flagUrl = flagUrlApi
+                    }
 
                 }
 

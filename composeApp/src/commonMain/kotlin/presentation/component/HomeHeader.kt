@@ -1,10 +1,13 @@
 package presentation.component
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,29 +15,48 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.compose.headerColor
 import com.example.compose.staleColor
 import currencyrateapp.composeapp.generated.resources.Res
 import currencyrateapp.composeapp.generated.resources.currency
 import currencyrateapp.composeapp.generated.resources.refresh
+import currencyrateapp.composeapp.generated.resources.swap
+import domain.model.Currency
 import domain.model.RateStatus
+import domain.model.RequestState
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import org.jetbrains.compose.resources.painterResource
 import util.displayCurrentDateTime
+
 
 @Composable
 fun HomeHeader(
     status: RateStatus,
-    onRatesRefresh: () -> Unit
+    source: RequestState<Currency>,
+    target: RequestState<Currency>,
+    amount: Double,
+    onSwitchClick: () -> Unit,
+    onRatesRefresh: () -> Unit,
+    onAmountChange: (Double) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -44,6 +66,10 @@ fun HomeHeader(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
         RateStatus(status = status, onRatesRefresh = onRatesRefresh)
+        Spacer(modifier = Modifier.height(24.dp))
+        CurrencyInputs(source, target, onSwitchClick)
+        Spacer(modifier = Modifier.height(24.dp))
+        AmountInput(amount,onAmountChange )
     }
 }
 
@@ -58,7 +84,8 @@ fun RateStatus(status: RateStatus, onRatesRefresh: () -> Unit) {
             Image(
                 modifier = Modifier.size(50.dp),
                 painter = painterResource(Res.drawable.currency),
-                contentDescription = "Exchange"
+                contentDescription = "Exchange",
+                colorFilter = ColorFilter.tint(Color.White)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
@@ -81,5 +108,124 @@ fun RateStatus(status: RateStatus, onRatesRefresh: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+fun CurrencyInputs(
+    source: RequestState<Currency>,
+    target: RequestState<Currency>,
+    onSwitchClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CurrencyView(
+            placeholder = "from",
+            currency = source,
+            onCLick = {}
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        IconButton(
+            modifier = Modifier.padding(top = 24.dp),
+            onClick = onSwitchClick
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.swap),
+                contentDescription = "Switch",
+                tint = Color.White
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        CurrencyView(
+            placeholder = "to",
+            currency = target,
+            onCLick = {}
+        )
+    }
+
+}
+
+@Composable
+fun RowScope.CurrencyView(
+    placeholder: String,
+    currency: RequestState<Currency>,
+    onCLick: () -> Unit
+) {
+
+    Column(modifier = Modifier.weight(1f)) {
+        Text(
+            modifier = Modifier.padding(start = 12.dp),
+            text = placeholder,
+            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+            color = Color.White
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .clip(RoundedCornerShape(size = 8.dp))
+                .background(Color.White.copy(0.5f))
+                .height(54.dp)
+                .clickable { onCLick() },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (currency.isSuccess()) {
+                val currencyData = currency.getSuccessData()
+                println("CURRENCY DATA :$currencyData")
+                val painter = currencyData.flagUrl?.let { asyncPainterResource(it) }
+                if (painter != null) {
+                    KamelImage({ painter }, contentDescription = "country flag", modifier = Modifier.size(24.dp))
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = currencyData.code,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    color = Color.White
+                )
+            }else {
+                Text(
+                    text = "Loading...",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    color = Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AmountInput(
+    amount: Double,
+    onAmountChange: (Double) -> Unit
+) {
+    TextField(
+        modifier = Modifier.fillMaxWidth()
+            .clip(RoundedCornerShape(size = 8.dp))
+            .animateContentSize()
+            .height(54.dp),
+        value = "$amount",
+        onValueChange = { onAmountChange(it.toDouble()) },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.White.copy(0.05f),
+            unfocusedContainerColor = Color.White.copy(0.05f),
+            disabledContainerColor = Color.White.copy(0.05f),
+            errorContainerColor = Color.White.copy(0.05f),
+            focusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            cursorColor = Color.White
+        ),
+        textStyle = TextStyle(
+            color = Color.White,
+            fontSize = MaterialTheme.typography.titleLarge.fontSize,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        ),
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+    )
 
 }

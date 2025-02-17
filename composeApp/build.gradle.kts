@@ -68,7 +68,8 @@ kotlin {
             implementation(libs.kotlin.coroutines)
             implementation(libs.stately.common)
 
-            implementation("media.kamel:kamel-image:0.7.0")
+            implementation("media.kamel:kamel-image-default:1.0.3")
+
 
         }
         iosMain.dependencies {
@@ -106,6 +107,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.media3.common.ktx)
     debugImplementation(compose.uiTooling)
 }
 
