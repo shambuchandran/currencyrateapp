@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,6 +34,7 @@ import com.example.compose.headerColor
 import domain.model.Currency
 import domain.model.RequestState
 import util.DoubleConverter
+import util.GetBebasFontFamily
 import util.calculateExchangeRates
 import util.convert
 
@@ -49,7 +51,9 @@ fun HomeBody(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = "${(animatedExchangeAmount * 100).toLong() / 100.0}",
-                fontSize = MaterialTheme.typography.displayLarge.fontSize,
+                //fontSize = MaterialTheme.typography.displayLarge.fontSize,
+                fontSize = 60.sp,
+                fontFamily = GetBebasFontFamily(),
                 fontWeight = FontWeight.Bold,
                 color = if (isSystemInDarkTheme()) Color.White else Color.Black,
                 textAlign = TextAlign.Center
@@ -78,24 +82,25 @@ fun HomeBody(
                     )
                 }
             }
-            Button(
-                modifier = Modifier.fillMaxWidth().height(54.dp).padding(horizontal = 24.dp)
-                    .background(color = Color.Unspecified, shape = RoundedCornerShape(99.dp)),
-                onClick = {
-                    if (source.isSuccess() && target.isSuccess()) {
-                        val exchangeRate = calculateExchangeRates(
-                            source.getSuccessData().value,
-                            target.getSuccessData().value
-                        )
-                        exchangeAmount = convert(amount,exchangeRate)
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = headerColor, contentColor = Color.White
-                )
-            ) {
-                Text("Convert")
-            }
         }
+        Button(
+            modifier = Modifier.fillMaxWidth().height(54.dp).padding(horizontal = 24.dp)
+                .background(color = Color.Unspecified, shape = RoundedCornerShape(99.dp)),
+            onClick = {
+                if (source.isSuccess() && target.isSuccess()) {
+                    val exchangeRate = calculateExchangeRates(
+                        source.getSuccessData().value,
+                        target.getSuccessData().value
+                    )
+                    exchangeAmount = convert(amount,exchangeRate)
+                }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = headerColor, contentColor = Color.White
+            )
+        ) {
+            Text("Convert")
+        }
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
