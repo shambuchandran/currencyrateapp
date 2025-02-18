@@ -67,7 +67,7 @@ class PreferencesImpl(settings: Settings) : PreferencesRepository {
     override fun readTargetCurrencyCode(): Flow<String> {
         return flowSettings.getStringFlow(
             key = TARGET_CURRENT_KEY,
-            defaultValue = "EUR"
+            defaultValue = "INR"
         )
     }
 }

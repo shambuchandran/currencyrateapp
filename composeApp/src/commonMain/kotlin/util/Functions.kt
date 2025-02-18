@@ -21,3 +21,10 @@ fun displayCurrentDateTime(): String {
     }
     return "$dayOfMonth$suffix $month, $year."
 }
+
+fun calculateExchangeRates(source:Double,target:Double):Double{
+    return target/source
+}
+fun convert(amount:Double,exchangeRates:Double):Double{
+    return amount*exchangeRates
+}

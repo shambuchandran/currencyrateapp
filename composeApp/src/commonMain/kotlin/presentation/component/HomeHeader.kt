@@ -1,6 +1,8 @@
 package presentation.component
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,11 +25,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,6 +52,7 @@ import domain.model.RequestState
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.jetbrains.compose.resources.painterResource
+import presentation.screen.CurrencyType
 import util.displayCurrentDateTime
 
 
@@ -56,7 +64,8 @@ fun HomeHeader(
     amount: Double,
     onSwitchClick: () -> Unit,
     onRatesRefresh: () -> Unit,
-    onAmountChange: (Double) -> Unit
+    onAmountChange: (Double) -> Unit,
+    onCurrencySelected: (CurrencyType, Currency) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -67,9 +76,9 @@ fun HomeHeader(
         Spacer(modifier = Modifier.height(24.dp))
         RateStatus(status = status, onRatesRefresh = onRatesRefresh)
         Spacer(modifier = Modifier.height(24.dp))
-        CurrencyInputs(source, target, onSwitchClick)
+        CurrencyInputs(source, target, onSwitchClick, onCurrencySelected)
         Spacer(modifier = Modifier.height(24.dp))
-        AmountInput(amount,onAmountChange )
+        AmountInput(amount, onAmountChange)
     }
 }
 
@@ -114,8 +123,14 @@ fun RateStatus(status: RateStatus, onRatesRefresh: () -> Unit) {
 fun CurrencyInputs(
     source: RequestState<Currency>,
     target: RequestState<Currency>,
-    onSwitchClick: () -> Unit
+    onSwitchClick: () -> Unit,
+    onCurrencySelected: (CurrencyType, Currency) -> Unit
 ) {
+    var animationStarted by remember { mutableStateOf(false) }
+    val animationRotation by animateFloatAsState(
+        targetValue = if (animationStarted) 180f else 0f,
+        animationSpec = tween(500)
+    )
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -123,12 +138,21 @@ fun CurrencyInputs(
         CurrencyView(
             placeholder = "from",
             currency = source,
-            onCLick = {}
+            onCLick = {
+                if (source.isSuccess()) {
+                    onCurrencySelected(CurrencyType.SOURCE, source.getSuccessData())
+                }
+            }
         )
         Spacer(modifier = Modifier.height(14.dp))
         IconButton(
-            modifier = Modifier.padding(top = 24.dp),
-            onClick = onSwitchClick
+            modifier = Modifier.padding(top = 24.dp).graphicsLayer {
+                rotationY = animationRotation
+            },
+            onClick = {
+                animationStarted = !animationStarted
+                onSwitchClick()
+            }
         ) {
             Icon(
                 painter = painterResource(Res.drawable.swap),
@@ -140,7 +164,14 @@ fun CurrencyInputs(
         CurrencyView(
             placeholder = "to",
             currency = target,
-            onCLick = {}
+            onCLick = {
+                if (target.isSuccess()) {
+                    onCurrencySelected(
+                        CurrencyType.TARGET,
+                        target.getSuccessData()
+                    ) // Pass the Currency object
+                }
+            }
         )
     }
 
@@ -174,8 +205,13 @@ fun RowScope.CurrencyView(
                 val currencyData = currency.getSuccessData()
                 println("CURRENCY DATA :$currencyData")
                 val painter = currencyData.flagUrl?.let { asyncPainterResource(it) }
+                println("CURRENCY DATA FLAG :$painter")
                 if (painter != null) {
-                    KamelImage({ painter }, contentDescription = "country flag", modifier = Modifier.size(24.dp))
+                    KamelImage(
+                        { painter },
+                        contentDescription = "country flag",
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -184,7 +220,7 @@ fun RowScope.CurrencyView(
                     fontSize = MaterialTheme.typography.titleLarge.fontSize,
                     color = Color.White
                 )
-            }else {
+            } else {
                 Text(
                     text = "Loading...",
                     fontWeight = FontWeight.Bold,
@@ -206,8 +242,12 @@ fun AmountInput(
             .clip(RoundedCornerShape(size = 8.dp))
             .animateContentSize()
             .height(54.dp),
-        value = "$amount",
-        onValueChange = { onAmountChange(it.toDouble()) },
+        value = amount.toString(),
+        onValueChange = {
+            it.toDoubleOrNull()?.let { newAmount ->
+                onAmountChange(newAmount)
+            }
+        },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.White.copy(0.05f),
             unfocusedContainerColor = Color.White.copy(0.05f),

@@ -119,6 +119,7 @@ class CurrencyApiServiceImpl(
                     val countryName = countryCode?.let { getCountryName(it) } ?: "Unknown"
                     val flagUrlApi = countryCode?.let { FLAG_URL_TEMPLATE.replace("{countryCode}", it) }
                         ?: "" //UNKNOWN FLAG
+                    println("FLAG URL $flagUrlApi")
                     Currency().apply {
                         _id = currency._id
                         code = currency.code
