@@ -35,6 +35,7 @@ class PreferencesImpl(settings: Settings) : PreferencesRepository {
 
     override suspend fun isDataFresh(currentTimestamp: Long): Boolean {
         val savedTimeStamp = flowSettings.getLong(key = TIMESTAMP_KEY, defaultValue = 0L)
+        println("savedTimeStamp $savedTimeStamp")
         if (savedTimeStamp == 0L) return false // No previous data
         val twentyFourHoursInMillis = 24 * 60 * 60 * 1000 // 24 hours
 

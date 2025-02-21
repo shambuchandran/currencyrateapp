@@ -102,20 +102,23 @@ class HomeViewModel(
         try {
             val localCache = mongoDb.readCurrencyData().first()
             println("Local Cache Result: $localCache")
-            if (localCache.isSuccess() && localCache.getSuccessData().isNotEmpty()) {
-                _allCurrencies.clear()
-                _allCurrencies.addAll(localCache.getSuccessData().map { it.copyFromRealm() })
-                _rateStatus.value = RateStatus.Fresh
-                printCurrencyData(_allCurrencies)
-                readSourceCurrency()
-                readTargetCurrency()
-                return
-            }
             val currentTimeMillis = Clock.System.now().toEpochMilliseconds()
-            if (preferences.isDataFresh(currentTimeMillis)) {
-                _rateStatus.value = RateStatus.Fresh
-                return
+            if (localCache.isSuccess() && localCache.getSuccessData().isNotEmpty()) {
+                if (preferences.isDataFresh(currentTimeMillis)) {
+                    _allCurrencies.clear()
+                    _allCurrencies.addAll(localCache.getSuccessData().map { it.copyFromRealm() })
+                    _rateStatus.value = RateStatus.Fresh
+                    printCurrencyData(_allCurrencies)
+                    readSourceCurrency()
+                    readTargetCurrency()
+                    return
+                }
             }
+            //val currentTimeMillis = Clock.System.now().toEpochMilliseconds()
+//            if (preferences.isDataFresh(currentTimeMillis)) {
+//                _rateStatus.value = RateStatus.Fresh
+//                return
+//            }
             val result = api.getLatestExchangeRates()
             if (result.isSuccess()) {
                 mongoDb.cleanUp()

@@ -1,6 +1,5 @@
 package data.remote.api
 
-import APIKEY
 import domain.CurrencyApiService
 import domain.PreferencesRepository
 import domain.model.ApiResponse
@@ -17,6 +16,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.errors.IOException
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import util.APIKEY
 
 class CurrencyApiServiceImpl(
     private val preferences: PreferencesRepository
@@ -132,6 +132,7 @@ class CurrencyApiServiceImpl(
 
                 //persist a timestamp
                 val lastUpdated = apiResponse.meta.lastUpdatedAt
+                println("last updated $lastUpdated")
                 preferences.saveLastUpdated(lastUpdated)
                 RequestState.Success(data = availableCurrencies)
             } else {
